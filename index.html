@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>シンプルカレンダー</title>
+    <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+
+<body>
+<div id="app">
+    <h1>スケジュール管理アプリ</h1>
+    <h2>{{ year }}年 {{ month + 1 }}月</h2>
+    <button @click="prevMonth">←前月</button>
+    <span>｜</span>
+    <button @click="nextMonth">翌月→</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>日</th>
+                <th>月</th>
+                <th>火</th>
+                <th>水</th>
+                <th>木</th>
+                <th>金</th>
+                <th>土</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(week, w) in calendar" :key="w">
+                <td v-for="(day, d) in week" :key="d" @click="selectDate(day)" :class="{ 'is-selected': formatDateStr(day) === selectedDate, 'has-day': day }">
+                    <!-- 日付が存在する場合のみ表示 -->
+                    <template v-if="day">
+                        <div class="calendar-day-head">
+                            <span class="day-number">{{ day }}</span>
+                            <!-- その日の天気を表示 -->
+                            <span class="day-weather">{{ getDayWeather(day) }}</span>
+                        </div>
+
+                        <!-- その日のタスク一覧 -->
+                        <div class="calendar-tasks">
+                            <div 
+                            v-for="task in getDayTasks(day)" 
+                            :key="task.id" 
+                            class="task-item"
+                            :class="{ 'is-completed': task.completed }">
+                            {{ task.title }}
+                            </div>
+                        </div>
+                    </template>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr style="margin: 40px 0;">
+
+    <div class="task-management-area">
+    <h3>📌 {{ selectedDate }} の予定管理</h3>
+    
+    <!-- タスク追加フォーム -->
+    <form @submit.prevent="addTask" class="add-form">
+        <input type="text" v-model="newTaskTitle" placeholder="新しい予定を入力してください">
+        <button type="submit">予定を追加</button>
+    </form>
+
+    <!-- 選択された日のタスク詳細一覧(checkbox・title・削除ボタン(引数でidを渡す)) -->
+    <ul class="detail-task-list">
+        <li v-if="selectedDayTasks.length === 0" class="no-task">この日の予定はありません。</li>
+        <li v-else v-for="task in selectedDayTasks" :key="task.id" class="detail-task-item">
+            <input type="checkbox" v-model="task.completed">
+            <span :class="{ 'text-completed': task.completed }">{{ task.title }}</span>
+            <button @click="deleteTask(task.id)" class="del-btn">削除</button>
+        </li>
+    </ul>
+    </div>
+</div>
+<script src="js/calendar.js"></script>
+</body>
